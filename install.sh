@@ -25,6 +25,9 @@ mkfs.ext4 /dev/sda3
 # mount partitions
 mount /dev/sda3 /mnt
 
+mkdir /mnt/efi
+mount /dev/sda1 /mnt/efi
+
 # set up greek mirrorlist
 curl 'https://www.archlinux.org/mirrorlist/?country=GR&protocol=https' \
     | sed -e 's/#Server/Server/g' \
