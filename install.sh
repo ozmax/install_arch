@@ -32,3 +32,8 @@ mount /dev/sda1 /mnt/efi
 curl 'https://www.archlinux.org/mirrorlist/?country=GR&protocol=https' \
     | sed -e 's/#Server/Server/g' \
     > /etc/pacman.d/mirrorlist
+
+# install base packages
+pacstrap /mnt base
+
+genfstab -L /mnt >> /mnt/etc/fstab
