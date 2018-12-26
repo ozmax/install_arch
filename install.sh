@@ -37,3 +37,9 @@ curl 'https://www.archlinux.org/mirrorlist/?country=GR&protocol=https' \
 pacstrap /mnt base
 
 genfstab -L /mnt >> /mnt/etc/fstab
+
+# cp chroot commands inside /mnt
+cp chroot_commands.sh /mnt
+
+# run chroot commands
+arch-chroot /mnt /chroot_commands.sh
