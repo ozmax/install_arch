@@ -38,8 +38,17 @@ pacstrap /mnt base
 
 genfstab -L /mnt >> /mnt/etc/fstab
 
-# cp chroot commands inside /mnt
-cp chroot_commands.sh /mnt
+# chroot into new installation and configure new system
+arch-chroot /mnt /bin/sh << 'EOS'
 
-# run chroot commands
-arch-chroot /mnt /chroot_commands.sh
+# set timezone
+ln -sf /usr/share/zoneinfo/Europe/Athens /etc/localtime
+
+# set locale
+sed -i 's/^#\(en_US.UTF-8.*\)/\1/' /etc/locale.gen
+locale-gen
+echo LANG=en_US.UTF-8 > /etc/locale/conf
+export LANG=en_US.UTF-8
+
+hwclock --systohc
+
