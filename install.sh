@@ -52,3 +52,16 @@ export LANG=en_US.UTF-8
 
 hwclock --systohc
 
+# setup uefi boot with bootctl
+bootctl --path=/boot/ install
+
+# create bootctl script
+printf "\
+title Arch Linux\n\
+linux /vmlinuz-linux\n\
+initrd /initramfs-linux.img\n\
+options root=PARTUUID="$(blkid -o value -s PARTUUID /dev/sda3)" rw\n\
+" > /boot/loader/entries/arch.conf
+
+# exit chroot
+EOS
