@@ -25,8 +25,8 @@ mkfs.ext4 /dev/sda3
 # mount partitions
 mount /dev/sda3 /mnt
 
-mkdir /mnt/efi
-mount /dev/sda1 /mnt/efi
+mkdir /mnt/boot
+mount /dev/sda1 /mnt/boot
 
 # set up greek mirrorlist
 curl 'https://www.archlinux.org/mirrorlist/?country=GR&protocol=https' \
