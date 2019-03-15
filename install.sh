@@ -63,5 +63,8 @@ initrd /initramfs-linux.img\n\
 options root=PARTUUID="$(blkid -o value -s PARTUUID /dev/sda3)" rw\n\
 " > /boot/loader/entries/arch.conf
 
+# set temporarily root password to "pass"
+printf "pass\npass" | passwd
+
 # exit chroot
 EOS
