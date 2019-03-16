@@ -63,9 +63,6 @@ initrd /initramfs-linux.img\n\
 options root=PARTUUID="$(blkid -o value -s PARTUUID /dev/sda3)" rw\n\
 " > /boot/loader/entries/arch.conf
 
-# set temporarily root password to "pass"
-printf "pass\npass" | passwd
-
 # setup network
 cp /etc/netctl/examples/ethernet-dhcp /etc/netctl/eth_config
 netctl enable eth_config
