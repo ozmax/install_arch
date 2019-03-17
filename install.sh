@@ -69,3 +69,9 @@ netctl enable eth_config
 
 # exit chroot
 EOS
+
+cat << 'EOS'
+Things to set:
+    * root password
+    * hostname
+EOS
