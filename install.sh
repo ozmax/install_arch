@@ -4,29 +4,19 @@
 timedatectl set-ntp true
 
 # partition the /dev/sdb
-parted -s /dev/sdb mklabel gpt
-# make uefi system partion
-parted -s /dev/sdb mkpart primary fat32 1MiB 551MiB
-parted -s /dev/sdb set 1 esp on
+parted -s /dev/sdb mklabel msdos
+parted -s /dev/sdb mkpart primary ext4 1MiB 99%
+parted -s /dev/sdb set 1 boot on
 # make swap partition
-parted -s /dev/sdb mkpart primary linux-swap 551MiB 1551MiB
-# make / partition
-parted -s /dev/sdb mkpart primary ext4 1551MiB 100%
+parted -s /dev/sdb mkpart primary linux-swap 99% 100%
 
 # format the partitions
-# format the esp
-mkfs.fat -F32 /dev/sdb1
-# format the swap partition
+mkfs.ext4 /dev/sdb1
 mkswap /dev/sdb2
 swapon /dev/sdb2
-# format the / partition
-mkfs.ext4 /dev/sdb3
 
 # mount partitions
-mount /dev/sdb3 /mnt
-
-mkdir /mnt/boot
-mount /dev/sdb1 /mnt/boot
+mount /dev/sdb1 /mnt
 
 # set up greek mirrorlist
 curl 'https://www.archlinux.org/mirrorlist/?country=GR&protocol=https' \
@@ -52,20 +42,13 @@ export LANG=en_US.UTF-8
 
 hwclock --systohc
 
-# setup uefi boot with bootctl
-bootctl --path=/boot/ install
-
-# create bootctl script
-printf "\
-title Arch Linux\n\
-linux /vmlinuz-linux\n\
-initrd /initramfs-linux.img\n\
-options root=PARTUUID="$(blkid -o value -s PARTUUID /dev/sdb3)" rw\n\
-" > /boot/loader/entries/arch.conf
-
 # setup network
 cp /etc/netctl/examples/ethernet-dhcp /etc/netctl/eth_config
-netctl enable eth_config
+
+# set up bootloader
+pacman --noconfirm -S syslinux
+syslinux-install_update -iam
+
 
 # exit chroot
 EOS
@@ -74,4 +57,5 @@ cat << 'EOS'
 Things to set:
     * root password
     * hostname
+    * update interface in netctl config file
 EOS
