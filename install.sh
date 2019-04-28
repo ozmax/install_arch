@@ -3,30 +3,33 @@
 # set ntp
 timedatectl set-ntp true
 
-# partition the /dev/sda
-parted -s /dev/sda mklabel gpt
+# select the block device with the lowest storage
+TARGET_DISK="/dev/""$(lsblk -nb -o KNAME,TYPE,SIZE|grep disk|sorn -n -k3|head -n1|grep -o '^\w*\w')"
+
+# partition the /dev/sdb
+parted -s "$TARGET_DISK" mklabel gpt
 # make uefi system partion
-parted -s /dev/sda mkpart primary fat32 1MiB 551MiB
-parted -s /dev/sda set 1 esp on
+parted -s "$TARGET_DISK" mkpart primary fat32 1MiB 551MiB
+parted -s "$TARGET_DISK" set 1 esp on
 # make swap partition
-parted -s /dev/sda mkpart primary linux-swap 551MiB 1551MiB
+parted -s "$TARGET_DISK" mkpart primary linux-swap 551MiB 1551MiB
 # make / partition
-parted -s /dev/sda mkpart primary ext4 1551MiB 100%
+parted -s "$TARGET_DISK" mkpart primary ext4 1551MiB 100%
 
 # format the partitions
 # format the esp
-mkfs.fat -F32 /dev/sda1
+mkfs.fat -F32 "$TARGET_DISK"1
 # format the swap partition
-mkswap /dev/sda2
-swapon /dev/sda2
+mkswap "$TARGET_DISK"2
+swapon "$TARGET_DISK"2
 # format the / partition
-mkfs.ext4 /dev/sda3
+mkfs.ext4 "$TARGET_DISK"3
 
 # mount partitions
-mount /dev/sda3 /mnt
+mount "$TARGET_DISK"3 /mnt
 
 mkdir /mnt/boot
-mount /dev/sda1 /mnt/boot
+mount "$TARGET_DISK"1 /mnt/boot
 
 # set up greek mirrorlist
 curl 'https://www.archlinux.org/mirrorlist/?country=GR&protocol=https' \
