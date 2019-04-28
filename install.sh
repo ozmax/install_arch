@@ -4,9 +4,14 @@
 timedatectl set-ntp true
 
 # select the block device with the lowest storage
-TARGET_DISK="/dev/""$(lsblk -nb -o KNAME,TYPE,SIZE|grep disk|sorn -n -k3|head -n1|grep -o '^\w*\w')"
+TARGET_DISK=/dev/"$(lsblk -nb -o KNAME,TYPE,SIZE|grep disk|sort -n -k3|head -n1|grep -o '^\w*\w')"
 
-# partition the /dev/sdb
+# set the partition variables
+BOOT_PARTITION="$TARGET_DISK"1
+SWAP_PARTITION="$TARGET_DISK"2
+ROOT_PARTITION="$TARGET_DISK"3
+
+# partition the disk
 parted -s "$TARGET_DISK" mklabel gpt
 # make uefi system partion
 parted -s "$TARGET_DISK" mkpart primary fat32 1MiB 551MiB
@@ -18,18 +23,18 @@ parted -s "$TARGET_DISK" mkpart primary ext4 1551MiB 100%
 
 # format the partitions
 # format the esp
-mkfs.fat -F32 "$TARGET_DISK"1
+mkfs.fat -F32 "$BOOT_PARTITION"
 # format the swap partition
-mkswap "$TARGET_DISK"2
-swapon "$TARGET_DISK"2
+mkswap "$SWAP_PARTITION"
+swapon "$SWAP_PARTITION"
 # format the / partition
-mkfs.ext4 "$TARGET_DISK"3
+mkfs.ext4 "$ROOT_PARTITION"
 
 # mount partitions
-mount "$TARGET_DISK"3 /mnt
+mount "$ROOT_PARTITION" /mnt
 
 mkdir /mnt/boot
-mount "$TARGET_DISK"1 /mnt/boot
+mount "$BOOT_PARTITION" /mnt/boot
 
 # set up greek mirrorlist
 curl 'https://www.archlinux.org/mirrorlist/?country=GR&protocol=https' \
@@ -41,6 +46,10 @@ pacstrap /mnt base
 
 genfstab -L /mnt >> /mnt/etc/fstab
 
+# setup bootctl options before the heredoc
+PART_UUID=$(blkid -o value -s PARTUUID "${ROOT_PARTITION}")
+export BOOTCTL_OPTIONS="root=PARTUUID='${PART_UUID}' rw"
+ 
 # chroot into new installation and configure new system
 arch-chroot /mnt /bin/sh << 'EOS'
 
@@ -59,12 +68,12 @@ hwclock --systohc
 bootctl --path=/boot/ install
 
 # create bootctl script
-printf "\
-title Arch Linux\n\
-linux /vmlinuz-linux\n\
-initrd /initramfs-linux.img\n\
-options root=PARTUUID="$(blkid -o value -s PARTUUID /dev/sda3)" rw\n\
-" > /boot/loader/entries/arch.conf
+printf '
+title Arch Linux
+linux /vmlinuz-linux
+initrd /initramfs-linux.img
+options %s
+' "${BOOTCTL_OPTIONS}" > /boot/loader/entries/arch.conf
 
 # setup network
 cp /etc/netctl/examples/ethernet-dhcp /etc/netctl/eth_config
