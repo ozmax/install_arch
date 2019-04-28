@@ -37,7 +37,8 @@ mkdir /mnt/boot
 mount "$BOOT_PARTITION" /mnt/boot
 
 # set up greek mirrorlist
-curl 'https://www.archlinux.org/mirrorlist/?country=GR&protocol=https' \
+curl 'https://www.archlinux.org/mirrorlist/?country=GR' \
+	| grep ntua \
     | sed -e 's/#Server/Server/g' \
     > /etc/pacman.d/mirrorlist
 
