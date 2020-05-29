@@ -4,7 +4,7 @@
 timedatectl set-ntp true
 
 # select the block device with the lowest storage
-TARGET_DISK=/dev/"$(lsblk -nb -o KNAME,TYPE,SIZE,TRAN | grep sata | grep disk | sort -n -k3 | head -n1 | cut -d ' ' -f1)"
+TARGET_DISK=/dev/"$(lsblk -nb -o KNAME,TYPE,SIZE,TRAN | grep disk | sort -n -k3 | head -n1 | cut -d ' ' -f1)"
 
 # set the partition variables
 BOOT_PARTITION="$TARGET_DISK"1
