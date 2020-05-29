@@ -37,8 +37,8 @@ mkdir /mnt/boot
 mount "$BOOT_PARTITION" /mnt/boot
 
 # set up greek mirrorlist
-curl 'https://www.archlinux.org/mirrorlist/?country=GR' \
-	| grep ntua \
+curl 'https://www.archlinux.org/mirrorlist/?country=DE' \
+	| grep fau \
     | sed -e 's/#Server/Server/g' \
     > /etc/pacman.d/mirrorlist
 
@@ -50,7 +50,7 @@ genfstab -L /mnt >> /mnt/etc/fstab
 # setup bootctl options before the heredoc
 PART_UUID=$(blkid -o value -s PARTUUID "${ROOT_PARTITION}")
 export BOOTCTL_OPTIONS="root=PARTUUID='${PART_UUID}' rw"
- 
+
 # chroot into new installation and configure new system
 arch-chroot /mnt /bin/sh << 'EOS'
 
